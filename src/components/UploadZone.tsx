@@ -16,7 +16,7 @@ export function UploadZone({ onFileLoaded, onFileRemoved, fileName, disabled }: 
   const parseFile = useCallback(
     (file: File) => {
       if (!file.name.endsWith('.json')) {
-        setParseError('Solo se aceptan archivos .json')
+        setParseError('SOLO FORMATO .JSON')
         return
       }
       setParseError(null)
@@ -26,7 +26,7 @@ export function UploadZone({ onFileLoaded, onFileRemoved, fileName, disabled }: 
           const data = JSON.parse(e.target?.result as string) as ScheduleInput
           onFileLoaded(data, file.name)
         } catch {
-          setParseError('El archivo no es un JSON válido')
+          setParseError('ERROR DE SINTAXIS JSON')
         }
       }
       reader.readAsText(file)
@@ -51,78 +51,58 @@ export function UploadZone({ onFileLoaded, onFileRemoved, fileName, disabled }: 
     e.target.value = ''
   }
 
-  const handleRemove = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setParseError(null)
-    onFileRemoved()
-  }
-
   return (
-    <div style={{ padding: '1.5rem' }}>
-      <p className="section-label">Archivo de entrada</p>
+    <div className="space-y-4">
+      <h3 className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">Repositorio de Datos</h3>
 
       <div
-        className={`upload-zone ${dragging ? 'drag-over' : ''} ${fileName ? 'has-file' : ''}`}
+        className={`relative border-b-2 border-slate-900 py-10 transition-all cursor-pointer
+          ${dragging ? 'bg-slate-50' : 'bg-transparent'}
+          ${disabled ? 'opacity-30 cursor-not-allowed' : ''}`}
         onClick={() => !disabled && !fileName && inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
-        aria-label="Zona de carga de archivo JSON"
       >
-        <div className="upload-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-            <line x1="12" y1="18" x2="12" y2="12" />
-            <line x1="9" y1="15" x2="15" y2="15" />
-          </svg>
-        </div>
-
         {fileName ? (
-          <>
-            <p className="upload-title" style={{ color: 'var(--color-accent)' }}>
-              Archivo listo para procesar
-            </p>
-            <div className="file-chip">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M4 0h5.5L14 4.5V15a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V1a1 1 0 0 1 1-1z" opacity="0.3"/>
-                <path d="M9.5 0v4.5H14"/>
-                <rect x="3.5" y="7" width="9" height="1" rx="0.5" fill="white"/>
-                <rect x="3.5" y="9.5" width="9" height="1" rx="0.5" fill="white"/>
-                <rect x="3.5" y="12" width="6" height="1" rx="0.5" fill="white"/>
-              </svg>
-              {fileName}
-              {!disabled && (
-                <button className="file-chip-remove" onClick={handleRemove} title="Quitar archivo">
-                  ✕
-                </button>
-              )}
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-xl font-light tracking-tight text-slate-900 uppercase">{fileName}</p>
+              <p className="text-[10px] font-bold text-blue-600 mt-1 tracking-widest">ARCHIVO CARGADO</p>
             </div>
-          </>
-        ) : (
-          <>
-            <p className="upload-title">Arrastra tu archivo JSON aquí</p>
-            <p className="upload-sub">
-              o{' '}
-              <button onClick={(e) => { e.stopPropagation(); inputRef.current?.click() }}>
-                selecciona un archivo
+            {!disabled && (
+              <button 
+                className="text-[10px] font-bold text-red-600 hover:opacity-70 tracking-widest uppercase"
+                onClick={(e) => { e.stopPropagation(); onFileRemoved() }}
+              >
+                Remover
               </button>
-            </p>
-          </>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            <p className="text-2xl font-light text-slate-300 tracking-tighter uppercase italic">Arrastrar archivo aquí</p>
+            <button 
+              className="text-left text-[10px] font-bold text-slate-900 mt-2 tracking-widest uppercase hover:underline"
+              onClick={(e) => { e.stopPropagation(); inputRef.current?.click() }}
+            >
+              o seleccionar manualmente
+            </button>
+          </div>
         )}
 
         <input
           ref={inputRef}
           type="file"
           accept=".json,application/json"
-          style={{ display: 'none' }}
+          className="hidden"
           onChange={handleChange}
         />
       </div>
 
       {parseError && (
-        <p style={{ fontSize: 12, color: 'var(--color-danger)', marginTop: 8, fontFamily: 'var(--font-mono)' }}>
-          ⚠ {parseError}
+        <p className="text-[10px] font-bold text-red-600 tracking-widest uppercase flex items-center gap-2">
+          <span>Error // {parseError}</span>
         </p>
       )}
     </div>

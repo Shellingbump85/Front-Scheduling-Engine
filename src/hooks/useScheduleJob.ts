@@ -59,6 +59,10 @@ export function useScheduleJob(): UseScheduleJobReturn {
     [cleanup]
   )
 
+  const isTerminal = (s: JobStatus) =>
+    ['OPTIMAL', 'FEASIBLE', 'INFEASIBLE', 'FAILED', 'SUCCESS', 'FAILURE'].includes(s)
+  const isSuccess = (s: JobStatus) => ['OPTIMAL', 'FEASIBLE', 'SUCCESS'].includes(s)
+
   const startPolling = useCallback(
     (jobId: string) => {
       pollRef.current = setInterval(async () => {
@@ -66,10 +70,12 @@ export function useScheduleJob(): UseScheduleJobReturn {
           const data = await getJobResult(jobId)
           setStatus(data.status)
 
-          if (data.status === 'SUCCESS') {
-            handleSuccess(data)
-          } else if (data.status === 'FAILURE') {
-            handleError(data.error ?? 'El solver falló')
+          if (isTerminal(data.status)) {
+            if (isSuccess(data.status)) {
+              handleSuccess(data)
+            } else {
+              handleError(data.error ?? `El solver terminó con estado: ${data.status}`)
+            }
           }
         } catch (e) {
           handleError(e instanceof Error ? e.message : 'Error de red')
@@ -82,20 +88,32 @@ export function useScheduleJob(): UseScheduleJobReturn {
   const connectWebSocket = useCallback(
     (wsUrl: string, jobId: string) => {
       // Build absolute WS URL if relative
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
       const url = wsUrl.startsWith('ws')
         ? wsUrl
-        : `ws://${window.location.host}${wsUrl}`
+        : `${protocol}//${window.location.host}${wsUrl}`
 
       try {
         const ws = new WebSocket(url)
         wsRef.current = ws
 
-        ws.onmessage = (event) => {
+        ws.onmessage = async (event) => {
           try {
-            const data: JobResult = JSON.parse(event.data)
-            if (data.status === 'SUCCESS') handleSuccess(data)
-            else if (data.status === 'FAILURE') handleError(data.error ?? 'Falló')
-            else setStatus(data.status)
+            const data = JSON.parse(event.data)
+            const backendStatus = data.status as JobStatus
+
+            if (isTerminal(backendStatus)) {
+              // WS message usually lacks full result, so we fetch it
+              try {
+                const fullData = await getJobResult(jobId)
+                if (isSuccess(backendStatus)) handleSuccess(fullData)
+                else handleError(fullData.error ?? `Error: ${backendStatus}`)
+              } catch (e) {
+                handleError('Error al obtener el resultado final')
+              }
+            } else {
+              setStatus(backendStatus)
+            }
           } catch {
             // non-JSON message, ignore
           }
