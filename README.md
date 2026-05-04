@@ -1,82 +1,76 @@
-# scheduling-front
+# Class Scheduling Engine Frontend
 
-Frontend para el [Class Scheduling Engine](https://github.com/nikotpab/class-scheduling-engine).
+This repository contains the frontend application for the Class Scheduling Engine. It provides a web interface to configure, generate, and visualize automated class schedules based on a mathematical optimization engine.
 
-## Stack
+The application serves as a bridge between the user and the scheduling backend, allowing for the uploading of configuration data, real-time monitoring of job status, and data export.
 
-- **Vite** + **React 18** + **TypeScript**
-- CSS vanilla con variables custom (sin librerías de UI)
-- WebSocket nativo + polling de fallback
+## Technical Stack
 
-## Estructura
+The project is built using modern web technologies focused on performance and type safety:
 
-```
-src/
-├── api/
-│   └── scheduleApi.ts       # POST /generate, GET /{job_id}
-├── components/
-│   ├── UploadZone.tsx        # Drag & drop del JSON
-│   ├── ConfigPanel.tsx       # Solver, penalizaciones, tiempo límite
-│   ├── StatusBar.tsx         # Estado del job en tiempo real
-│   └── ResultTable.tsx       # Tabla de asignaciones + stats + export
-├── hooks/
-│   ├── useScheduleJob.ts     # Orquesta POST → WebSocket → polling
-│   └── useExportCSV.ts       # Serializa a CSV con BOM UTF-8
-├── types/
-│   └── schedule.ts           # Tipos TypeScript del backend (Pydantic → TS)
-└── styles/
-    └── global.css
-```
+- Framework: React 18
+- Build Tool: Vite
+- Language: TypeScript
+- Styling: Tailwind CSS and Vanilla CSS
+- Communication: Native WebSockets with polling fallback
 
-## Instalación
+## Key Functionalities
+
+- Data Upload: Interface for uploading scheduling constraints and parameters in JSON format via drag-and-drop.
+- Configuration Management: Tools to adjust solver parameters, penalty weights, and time limits prior to job execution.
+- Real-time Monitoring: Status updates via WebSocket connections to track the progress of the optimization process.
+- Results Visualization: Structured display of the generated schedule, including detailed assignments and statistics.
+- Export Capabilities: Functionality to export the final results into CSV format with UTF-8 encoding.
+
+## Project Structure
+
+The source code is organized as follows:
+
+- src/api: Service layer for HTTP and API communication.
+- src/components: Modular UI components such as UploadZone, ConfigPanel, and ResultTable.
+- src/hooks: Custom React hooks for job orchestration and data serialization.
+- src/types: TypeScript definitions synchronized with the backend schemas.
+- src/styles: Global styling and theme configuration.
+
+## Setup and Installation
+
+### Prerequisites
+
+- Node.js (Latest LTS version recommended)
+- npm or yarn
+
+### Installation
+
+To install the necessary dependencies, execute the following command:
 
 ```bash
 npm install
 ```
 
-## Desarrollo
+### Local Development
 
-El backend debe estar corriendo en `http://localhost:8000`. El proxy de Vite
-redirige `/api` y `/ws` automáticamente.
+The application requires the Class Scheduling Engine backend to be active. By default, the frontend expects the backend to be available at http://localhost:8000.
+
+To start the development server:
 
 ```bash
-# Arrancar backend (en el repo del engine)
-docker compose --profile dev up --build
-
-# Arrancar frontend
 npm run dev
 ```
 
-Abre [http://localhost:5173](http://localhost:5173).
+The application will be accessible at http://localhost:5173.
 
-## Build para producción
+### Production Build
+
+To generate an optimized production build:
 
 ```bash
 npm run build
 ```
 
-## Flujo de datos
+## Data Workflow
 
-1. Usuario arrastra un `.json` con el payload de entrada
-2. Los campos de configuración (solver, penalizaciones) se pueden ajustar antes de generar
-3. Al hacer clic en **Generar horario**:
-   - `POST /api/v1/schedules/generate` → devuelve `job_id` + `ws_url`
-   - Se abre un WebSocket en `ws_url` para recibir el resultado en tiempo real
-   - Si el WebSocket falla, el hook hace polling cada 3s al `GET /api/v1/schedules/{job_id}`
-4. Al completar, aparece la tabla con las asignaciones y los botones de **Exportar CSV** y **Reiniciar**
-
-## Formato del JSON de entrada
-
-Ver el README del backend para el schema completo. Ejemplo mínimo:
-
-```json
-{
-  "teachers": [...],
-  "subjects": [...],
-  "rooms": [...],
-  "timeslots": [...],
-  "penalty_weights": { "penalizacion1": 2.0, "penalizacion2": 1.0 },
-  "solver": "pulp_cbc",
-  "time_limit_seconds": 300
-}
-```
+1. Configuration Input: The user provides a JSON file containing definitions for teachers, subjects, rooms, and timeslots.
+2. Parameter Tuning: Optimization parameters such as the solver type and time limits are configured through the UI.
+3. Job Initiation: A POST request is sent to the backend, which returns a unique job identifier and a WebSocket URL.
+4. Process Monitoring: The application establishes a WebSocket connection to receive status updates. If the connection fails, it automatically falls back to periodic polling.
+5. Completion and Export: Upon successful generation, the schedule is presented in a tabular format, enabling the user to export the data for external use.
