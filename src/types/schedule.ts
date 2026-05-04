@@ -3,13 +3,19 @@
 export type TeacherType = 'REGULAR' | 'PROCOM' | 'PROJEX' | 'PROHES'
 export type SolverType = 'pulp_cbc' | 'tabu_search'
 
+export interface AvailabilitySlot {
+  day: number
+  slot_index: number
+}
+
 export interface Teacher {
   id: string
   name: string
   teacher_type: TeacherType
   campus_ids: string[]
-  availability_slots: string[]
+  availability_slots: AvailabilitySlot[]
   max_hours_per_day: number
+  ntpphes?: number
 }
 
 export interface Subject {
@@ -19,6 +25,7 @@ export interface Subject {
   required_sessions: number
   campus_id: string
   student_count: number
+  eligible_teacher_ids?: string[]
 }
 
 export interface Room {
@@ -53,33 +60,33 @@ export interface ScheduleInput {
 
 // ─── Output types (what the backend returns) ──────────────────────────────────
 
-export interface ScheduleEntry {
+export interface JobAssignment {
   teacher_id: string
-  teacher_name: string
-  teacher_type: TeacherType
   subject_id: string
-  subject_name: string
-  group_id: string
   room_id: string
-  room_name: string
+  timeslot_id: string
   campus_id: string
-  day: number
-  slot_index: number
-  start_time: string
-  end_time: string
+  group_id: string
 }
-
-export type JobStatus = 'PENDING' | 'RUNNING' | 'SUCCESS' | 'FAILURE'
 
 export interface JobResult {
   job_id: string
   status: JobStatus
-  result?: {
-    assignments: ScheduleEntry[]
-    objective_value: number
-    solver_used: string
-    solve_time_seconds: number
-  }
-  error?: string
-  ws_url?: string
+  penalty_score?: number
+  solver_status?: string
+  error_message?: string
+  assignments?: JobAssignment[]
+  created_at?: string
+  completed_at?: string
+}
+
+export interface ScheduleEntry extends JobAssignment {
+  teacher_name: string
+  teacher_type: TeacherType
+  subject_name: string
+  room_name: string
+  day: number
+  slot_index: number
+  start_time: string
+  end_time: string
 }
