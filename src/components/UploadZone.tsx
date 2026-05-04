@@ -53,7 +53,6 @@ export function UploadZone({ onFileLoaded, onFileRemoved, fileName, disabled }: 
 
   return (
     <div className="space-y-4">
-      <h3 className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">Repositorio de Datos</h3>
 
       <div
         className={`relative border-b-2 border-slate-900 py-10 transition-all cursor-pointer

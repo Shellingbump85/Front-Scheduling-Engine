@@ -68,13 +68,12 @@ export default function App() {
       {/* Sidebar Nav (Minimal Text) */}
       <nav className="w-56 border-r border-slate-100 flex flex-col flex-shrink-0">
         <div className="p-8">
-          <h1 className="text-sm font-black tracking-tighter uppercase leading-tight">SCHEDULING<br/>ENGINE</h1>
+          <h1 className="text-sm font-black tracking-tighter uppercase leading-tight">CLASS SCHEDULING<br/>ENGINE</h1>
           <div className="mt-2 h-0.5 w-4 bg-slate-900" />
         </div>
         
         <div className="flex-1 px-8 space-y-8 mt-4">
           <div>
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-4">Módulos</p>
             <div className="flex flex-col items-start gap-4">
               {[
                 { id: 'admin', label: 'Gestión / Motor' },
@@ -94,7 +93,6 @@ export default function App() {
         </div>
 
         <div className="p-8">
-          <p className="text-[10px] font-mono text-slate-300 uppercase tracking-tighter">BUILD 2026.05.04</p>
         </div>
       </nav>
 
@@ -105,10 +103,10 @@ export default function App() {
         <header className="h-20 flex items-center justify-between px-12 z-10">
           <div className="flex flex-col">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
-              {activeView === 'admin' ? 'Administrative Control' : activeView === 'teacher' ? 'Faculty Portal' : 'Student Access'}
+              {activeView === 'admin' ? 'Administrativos' : activeView === 'teacher' ? 'Docentes' : 'Estudiantes'}
             </span>
             <h2 className="text-lg font-light tracking-tight text-slate-800">
-              {activeView === 'admin' ? 'Generador de Planificación Académica' : activeView === 'teacher' ? 'Consulta de Carga Horaria' : 'Visualización de Cursos'}
+              {activeView === 'admin' ? 'Generador de planificación académica' : activeView === 'teacher' ? 'Consulta de carga horaria' : 'Visualización de cursos'}
             </h2>
           </div>
           
@@ -132,7 +130,6 @@ export default function App() {
                 <div className="flex justify-between items-start">
                   <div className="space-y-2">
                     <h3 className="text-3xl font-light tracking-tighter text-slate-900 uppercase italic">Control de Optimización</h3>
-                    <p className="text-xs text-slate-500 leading-relaxed max-w-md">Distribuya automáticamente la carga académica basándose en el modelo Esquivel Tovar (2014). Cargue su dataset para iniciar.</p>
                   </div>
                   <button
                     className={`px-8 py-3 text-[11px] font-bold tracking-[0.2em] uppercase transition-all
